@@ -3,87 +3,84 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Социален компас: Крузо</title>
+    <title>Социален компас: Робинзон Крузо и AI</title>
     <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="manifest.webmanifest">
-    <style>
-        .progress-ring { transition: stroke-dashoffset 0.35s; transform: rotate(-90deg); transform-origin: 50% 50%; }
-    </style>
 </head>
-<body class="bg-slate-50 min-h-screen flex flex-col items-center p-4 font-sans">
+<body class="bg-gray-50 min-h-screen flex flex-col items-center p-4">
 
-    <div id="motto-box" class="w-full max-w-md bg-green-600 text-white p-4 rounded-2xl shadow-lg mb-6 text-center italic min-h-[80px] flex items-center justify-center">
-        "Зареждам дигитален наръчник..."
+    <div id="motto-display" class="w-full max-w-md bg-green-600 text-white p-6 rounded-2xl shadow-lg mb-6 text-center italic font-medium min-h-[100px] flex items-center justify-center">
+        Зареждане на наръчника...
     </div>
 
-    <div class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-8 border border-slate-100 text-center">
-        <h1 class="text-xs font-black tracking-[0.3em] text-slate-400 mb-8 uppercase">Крузо Аларм / STEM Баланс</h1>
+    <div class="w-full max-w-md bg-white rounded-[2rem] shadow-xl p-8 border border-gray-100 text-center">
+        <h1 class="text-xs font-bold tracking-[0.3em] text-gray-400 mb-6 uppercase">Крузо Аларм / STEM Баланс</h1>
         
-        <div class="flex justify-between mb-8 px-4">
-            <div class="text-center">
-                <span class="block text-[10px] uppercase tracking-widest text-slate-400">Кортизол</span>
-                <span id="cortisol-val" class="text-2xl font-bold text-red-500">0</span>
+        <div class="flex justify-around mb-8 bg-gray-50 p-4 rounded-2xl">
+            <div>
+                <span class="block text-[10px] uppercase text-gray-400 font-bold">Кортизол</span>
+                <span id="cort-val" class="text-3xl font-black text-red-500">0</span>
             </div>
-            <div class="text-center">
-                <span class="block text-[10px] uppercase tracking-widest text-slate-400">Ендорфини</span>
-                <span id="endorphin-val" class="text-2xl font-bold text-blue-500">0</span>
+            <div>
+                <span class="block text-[10px] uppercase text-gray-400 font-bold">Ендорфини</span>
+                <span id="endo-val" class="text-3xl font-black text-blue-500">0</span>
             </div>
         </div>
 
-        <div class="relative flex items-center justify-center mb-10">
-            <svg width="220" height="220">
-                <circle class="text-slate-100" stroke-width="10" stroke="currentColor" fill="transparent" r="100" cx="110" cy="110"/>
-                <circle id="progress" class="text-green-500 progress-ring" stroke-width="10" stroke-dasharray="628.3" stroke-dashoffset="628.3" stroke-linecap="round" stroke="currentColor" fill="transparent" r="100" cx="110" cy="110"/>
-            </svg>
-            <div id="timer-display" class="absolute text-5xl font-mono font-black text-slate-800">50:00</div>
+        <div class="mb-8">
+            <div id="timer-display" class="text-7xl font-mono font-black text-gray-800">50:00</div>
+            <p class="text-gray-400 text-sm mt-2">Праг: 50 мин.</p>
         </div>
 
-        <button id="main-btn" onclick="startTimer()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95">СТАРТ СЕСИЯ</button>
+        <button id="start-btn" onclick="startKruso()" class="w-full bg-green-500 text-white py-5 rounded-2xl font-bold text-xl shadow-lg hover:bg-green-600 transition-all active:scale-95">СТАРТИРАЙ СЕСИЯ</button>
     </div>
 
-    <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-6 z-50">
-        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl">
-            <div id="modal-content"></div>
-        </div>
+    <div id="modal-overlay" class="fixed inset-0 bg-black/70 backdrop-blur-sm hidden flex items-center justify-center p-6 z-50">
+        <div id="modal-box" class="bg-white rounded-[2rem] p-8 w-full max-w-sm shadow-2xl"></div>
     </div>
 
     <script>
-        // Данни от Секция I, II, III и IV
+        // ДАННИ ОТ СЕКЦИЯ I 
         const mottos = [
-            "Режимът е моята крепост срещу лудостта.",
-            "Петкан не е просто слуга, той е моето социално огледало.",
-            "Отчаянието се лекува с труд и броени стъпки.",
-            "Моят остров, моите правила, моят дигитален баланс.",
-            "Цивилизацията е вътре в мен, не в екрана."
+            "Мързелът няма да те доведе до никъде.",
+            "Светът е отвън, не в екрана.",
+            "Говори с хора, а не с телефона.",
+            "Движението е лекът на живота.",
+            "Дори и най-малката вяра, може да ти помогне в най-трудните ти дни."
         ];
-        const missions = ["20 клякания", "1 минута планк", "15 лицеви опори", "30 секунди висок ход"];
-        const ethicalQuestions = ["Чувстваш ли се изолиран без екрана?", "Пренебрегваш ли хигиената си заради игри?", "Лъжеш ли за времето, прекарано онлайн?"];
-        
+
+        // ДАННИ ОТ СЕКЦИЯ III 
+        const missions = [
+            { name: "Клекове", desc: "60 клека до долу с изпънати ръце" },
+            { name: "Jumping Jacks", desc: "от 30 и 40, бързо изпълнение" },
+            { name: "Бавно тичане", desc: "5 км джогинг" },
+            { name: "Планк", desc: "2 мин. планк на лакти, изпънато тяло" }
+        ];
+
+        // ДАННИ ОТ СЕКЦИЯ IV [cite: 22]
+        const ethics = [
+            "Предпочитате ли да търсите подкрепа от AI, вместо да говорите с други хора?",
+            "Чрез изкуствения интелект можем ли да избягаме от физическите си проблеми?",
+            "Пренебрегвате ли основните си нужди, за да прекарате повече време на екрана?"
+        ];
+
         let cortisol = 0, endorphins = 0, time = 3000, timerIdx = null;
 
-        // Ротация на мотота
-        let mottoIdx = 0;
+        // Ротация на мотота [cite: 7]
+        let mIdx = 0;
         setInterval(() => {
-            mottoIdx = (mottoIdx + 1) % mottos.length;
-            document.getElementById('motto-box').innerText = mottos[mottoIdx];
-        }, 5000);
+            document.getElementById('motto-display').innerText = `"${mottos[mIdx]}"`;
+            mIdx = (mIdx + 1) % mottos.length;
+        }, 6000);
 
-        function updateUI() {
-            const m = Math.floor(time / 60), s = time % 60;
-            document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
-            const offset = 628.3 - ( (3000 - time) / 3000) * 628.3;
-            document.getElementById('progress').style.strokeDashoffset = offset;
-            document.getElementById('cortisol-val').innerText = cortisol;
-            document.getElementById('endorphin-val').innerText = endorphins;
-        }
-
-        function startTimer() {
+        function startKruso() {
             if(timerIdx) return;
-            document.getElementById('main-btn').disabled = true;
+            document.getElementById('start-btn').disabled = true;
             timerIdx = setInterval(() => {
                 if(time > 0) {
                     time--;
-                    if((3000 - time) % 300 === 0) cortisol += 5; // Секция II: +5 на всеки 5 мин
+                    // На всеки 5 мин (300 сек), кортизол +5 
+                    if((3000 - time) % 300 === 0) cortisol += 5;
                     updateUI();
                 } else {
                     clearInterval(timerIdx);
@@ -92,58 +89,76 @@
             }, 1000);
         }
 
+        function updateUI() {
+            const m = Math.floor(time / 60), s = time % 60;
+            document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            document.getElementById('cort-val').innerText = cortisol;
+            document.getElementById('endo-val').innerText = endorphins;
+        }
+
         function showMission() {
-            const mission = missions[Math.floor(Math.random()*missions.length)];
-            const modal = document.getElementById('modal');
-            modal.classList.remove('hidden');
-            document.getElementById('modal-content').innerHTML = `
-                <h2 class="text-xl font-bold mb-4">🚨 ВРЕМЕТО ИЗТЕЧЕ!</h2>
-                <p class="mb-6 text-slate-600">За да отключиш устройството, изпълни ФВС Мисия:<br><strong>${mission}</strong></p>
-                <div class="flex flex-col gap-3">
-                    <button onclick="completeMission()" class="bg-green-500 text-white py-3 rounded-xl font-bold">ИЗПЪЛНЕНО</button>
-                    <button onclick="triggerEthics()" class="text-slate-400 text-sm py-2">Отказвам мисията</button>
+            const m = missions[Math.floor(Math.random()*missions.length)];
+            openModal(`
+                <h2 class="text-2xl font-black mb-4">ФВС МИСИЯ</h2>
+                <p class="text-gray-600 mb-6"><strong>${m.name}:</strong> ${m.desc}</p>
+                <div class="space-y-3">
+                    <button onclick="applyCorrection()" class="w-full bg-green-500 text-white py-4 rounded-xl font-bold">ИЗПЪЛНИХ МИСИЯТА</button>
+                    <button onclick="showEthics()" class="w-full text-gray-400 text-sm">Отказвам мисията</button>
                 </div>
-            `;
+            `);
         }
 
-        function completeMission() {
-            cortisol -= 15; // Секция II: Корекция -15
-            endorphins += 20; // Секция II: Корекция +20
-            resetApp();
+        function applyCorrection() {
+            cortisol -= 5; // Секция II: Корекция кортизол -5 
+            endorphins += 25; // Секция II: Корекция ендорфини +25 
+            closeModal();
+            resetTimer();
         }
 
-        function triggerEthics() {
-            let ethicsContent = `<h2 class="text-xl font-bold mb-4">Етичен филтър</h2><div class="text-left space-y-4">`;
-            ethicalQuestions.forEach((q, i) => {
-                ethicsContent += `<label class="flex items-center gap-3 text-sm"><input type="checkbox" class="ethics-check"> ${q}</label>`;
+        function showEthics() {
+            let content = `<h2 class="text-xl font-bold mb-4">Етичен филтър</h2><p class="text-xs text-gray-500 mb-4">Казус Адам Рейн</p>`;
+            ethics.forEach((q, i) => {
+                content += `<label class="block text-left mb-3 p-3 bg-gray-50 rounded-lg text-sm border">
+                    <input type="checkbox" class="ethics-check mr-2"> ${q}
+                </label>`;
             });
-            ethicsContent += `</div><button onclick="checkEthics()" class="w-full bg-slate-900 text-white py-3 rounded-xl mt-6">Провери риск</button>`;
-            document.getElementById('modal-content').innerHTML = ethicsContent;
+            content += `<button onclick="validateEthics()" class="w-full bg-black text-white py-4 rounded-xl mt-4 font-bold">ПРОВЕРИ РИСК</button>`;
+            openModal(content);
         }
 
-        function checkEthics() {
+        function validateEthics() {
             const yesCount = document.querySelectorAll('.ethics-check:checked').length;
             if(yesCount >= 2) {
-                document.getElementById('modal-content').innerHTML = `
-                    <h2 class="text-xl font-bold text-red-600 mb-4">ВИСОК РИСК!</h2>
-                    <p class="text-sm mb-6">Твоите отговори показват нужда от подкрепа.</p>
-                    <div class="bg-slate-100 p-4 rounded-xl text-left text-xs space-y-2">
-                        <p>📞 Национална линия за деца: 116 111</p>
-                        <p>🌐 safenet.bg (Център за безопасен интернет)</p>
+                // СЕКЦИЯ IV & КРИЗИСНИ КОНТАКТИ 
+                openModal(`
+                    <h2 class="text-2xl font-black text-red-600 mb-4">КРИТИЧЕН РИСК!</h2>
+                    <p class="text-sm mb-6 text-gray-600">Системата те идентифицира като високорисков потребител (Пътят на Адам Рейн).</p>
+                    <div class="text-left space-y-4 bg-red-50 p-4 rounded-xl border border-red-100">
+                        <div><p class="text-[10px] uppercase font-bold text-red-400">Национална линия за подкрепа</p>
+                        <p class="font-bold">📞 116 111</p></div>
+                        <div><p class="text-[10px] uppercase font-bold text-red-400">Помощ при домашно насилие</p>
+                        <p class="font-bold">📞 0800 11 977</p></div>
                     </div>
-                    <button onclick="resetApp()" class="w-full mt-6 py-2 text-slate-500">Затвори</button>
-                `;
+                    <button onclick="closeModal(); resetTimer();" class="mt-6 text-gray-400 text-xs uppercase underline">Разбрах</button>
+                `);
             } else {
-                resetApp();
+                closeModal();
+                resetTimer();
             }
         }
 
-        function resetApp() {
+        function openModal(html) {
+            const m = document.getElementById('modal-overlay');
+            document.getElementById('modal-box').innerHTML = html;
+            m.classList.remove('hidden');
+        }
+
+        function closeModal() { document.getElementById('modal-overlay').classList.add('hidden'); }
+
+        function resetTimer() {
             time = 3000;
-            clearInterval(timerIdx);
             timerIdx = null;
-            document.getElementById('main-btn').disabled = false;
-            document.getElementById('modal').classList.add('hidden');
+            document.getElementById('start-btn').disabled = false;
             updateUI();
         }
 
