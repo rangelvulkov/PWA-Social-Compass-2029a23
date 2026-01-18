@@ -3,30 +3,120 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Социален компас: Крузо Аларм</title>
+    <title>Социален компас: Крузо</title>
     <link rel="manifest" href="manifest.webmanifest">
     <style>
-        body { font-family: sans-serif; background: #f8f8f8; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
-        .card { background: white; padding: 50px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; width: 300px; }
-        #timer { font-size: 70px; font-weight: bold; margin: 20px 0; color: #22c55e; }
-        .stats { display: flex; justify-content: space-between; margin-top: 20px; font-weight: bold; }
+        :root {
+            --primary: #22c55e;
+            --bg: #1a1a1a; /* Тъмен режим за пестене на батерия */
+            --card: #2d2d2d;
+        }
+        body {
+            font-family: 'Segoe UI', sans-serif;
+            background-color: var(--bg);
+            color: white;
+            display: flex;
+            flex-direction: column;
+            align-items: center;
+            justify-content: center;
+            height: 100vh;
+            margin: 0;
+        }
+        .container {
+            background: var(--card);
+            padding: 40px;
+            border-radius: 40px;
+            box-shadow: 0 20px 50px rgba(0,0,0,0.3);
+            text-align: center;
+            width: 320px;
+            position: relative;
+        }
+        /* Кръгов индикатор */
+        .progress-ring {
+            position: relative;
+            width: 200px;
+            height: 200px;
+            margin: 0 auto;
+        }
+        .progress-ring circle {
+            fill: none;
+            stroke-width: 10;
+            transform: rotate(-90deg);
+            transform-origin: 50% 50%;
+            transition: stroke-dashoffset 0.3s;
+        }
+        #timer {
+            position: absolute;
+            top: 50%;
+            left: 50%;
+            transform: translate(-50%, -50%);
+            font-size: 48px;
+            font-weight: bold;
+        }
+        .stats {
+            display: flex;
+            justify-content: space-around;
+            margin-top: 30px;
+            background: rgba(0,0,0,0.2);
+            padding: 15px;
+            border-radius: 20px;
+        }
+        .stat-val { display: block; font-size: 20px; font-weight: bold; }
+        .quote { font-style: italic; color: #888; margin-bottom: 40px; text-align: center; }
     </style>
 </head>
 <body>
-    <div style="font-style: italic; color: #666; margin-bottom: 30px;">"Всяка почивка е стъпка към успеха."</div>
-    <div class="card">
-        <div style="color: #aaa; letter-spacing: 2px; font-size: 12px;">КРУЗО АЛАРМ</div>
-        <div id="timer">50:00</div>
+
+    <div class="quote" id="quote">"Всяка почивка е стъпка към успеха."</div>
+
+    <div class="container">
+        <div style="font-size: 12px; letter-spacing: 3px; color: var(--primary); margin-bottom: 20px;">КРУЗО АЛАРМ</div>
+        
+        <div class="progress-ring">
+            <svg width="200" height="200">
+                <circle stroke="#444" r="90" cx="100" cy="100"/>
+                <circle id="bar" stroke="#22c55e" r="90" cx="100" cy="100" stroke-dasharray="565.48" stroke-dashoffset="0"/>
+            </svg>
+            <div id="timer">50:00</div>
+        </div>
+
         <div class="stats">
-            <span style="color: #ef4444;">Кортизол: 0</span>
-            <span style="color: #3b82f6;">Ендорфини: 0</span>
+            <div style="color: #ef4444;">Кортизол<span class="stat-val" id="cort">0</span></div>
+            <div style="color: #3b82f6;">Ендорфини<span class="stat-val" id="endo">0</span></div>
         </div>
     </div>
+
     <script>
-        // Регистрираме Service Worker за инсталиране
-        if ('serviceWorker' in navigator) {
-            navigator.serviceWorker.register('sw.js');
+        // Регистрация за PWA
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+
+        let total = 3000;
+        let current = total;
+        const bar = document.getElementById('bar');
+        const circleLength = 565.48;
+
+        function update() {
+            let m = Math.floor(current / 60);
+            let s = current % 60;
+            document.getElementById('timer').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            
+            // Анимация на кръга
+            let offset = circleLength - (current / total) * circleLength;
+            bar.style.strokeDashoffset = offset;
+
+            if (current > 0) {
+                current--;
+                if (current % 60 === 0) document.getElementById('cort').innerText = Math.floor((total-current)/60);
+            } else {
+                // Звук при край (ползваме системен сигнал)
+                let context = new AudioContext();
+                let osc = context.createOscillator();
+                osc.connect(context.destination);
+                osc.start();
+                osc.stop(context.currentTime + 1);
+            }
         }
+        setInterval(update, 1000);
     </script>
 </body>
 </html>
