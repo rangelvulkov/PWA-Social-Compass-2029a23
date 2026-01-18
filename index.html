@@ -36,12 +36,10 @@
         .crisis-box { background: #450a0a; border: 1px solid var(--red); padding: 20px; border-radius: 15px; margin-top: 20px; display: none; }
     </style>
 </head>
-<body><button id="installBtn" style="display:none; background: #f59e0b; color: white; padding: 15px; border-radius: 10px; cursor: pointer; border: none; font-weight: bold; margin-bottom: 20px;">
+<body>
+<button id="installBtn" style="display:none; background: #f59e0b; color: white; padding: 15px; border-radius: 10px; cursor: pointer; border: none; font-weight: bold; margin-bottom: 20px;">
     📥 ИНСТАЛИРАЙ ПРИЛОЖЕНИЕТО
 </button>
-
-    <button id="installBtn">📥 ИНСТАЛИРАЙ СОЦИАЛЕН КОМПАС</button>
-
     <div class="motto-container">
         <div id="motto-text">"Зареждане на дневното мото..."</div>
     </div>
@@ -211,6 +209,26 @@
 
         if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
         updateDisplay();
-    </script>
+    let deferredPrompt;
+const installBtn = document.getElementById('installBtn');
+
+// Браузърът проверява дали приложението може да се инсталира
+window.addEventListener('beforeinstallprompt', (e) => {
+    e.preventDefault(); // Спира автоматичното изскачане
+    deferredPrompt = e; // Запазва събитието
+    installBtn.style.display = 'block'; // Показва твоя бутон/линк
+});
+
+// Когато потребителят кликне върху твоя линк
+installBtn.addEventListener('click', async () => {
+    if (deferredPrompt) {
+        deferredPrompt.prompt(); // Показва системния прозорец за инсталация
+        const { outcome } = await deferredPrompt.userChoice;
+        if (outcome === 'accepted') {
+            installBtn.style.display = 'none'; // Скрива бутона при успех
+        }
+        deferredPrompt = null;
+    }
+});</script>
 </body>
 </html>
