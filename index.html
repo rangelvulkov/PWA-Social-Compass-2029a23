@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Социален компас: Крузо Аларм</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <style>
+        body { font-family: sans-serif; background: #f8f8f8; display: flex; flex-direction: column; align-items: center; justify-content: center; height: 100vh; margin: 0; }
+        .card { background: white; padding: 50px; border-radius: 30px; box-shadow: 0 10px 30px rgba(0,0,0,0.05); text-align: center; width: 300px; }
+        #timer { font-size: 70px; font-weight: bold; margin: 20px 0; color: #22c55e; }
+        .stats { display: flex; justify-content: space-between; margin-top: 20px; font-weight: bold; }
+    </style>
+</head>
+<body>
+    <div style="font-style: italic; color: #666; margin-bottom: 30px;">"Всяка почивка е стъпка към успеха."</div>
+    <div class="card">
+        <div style="color: #aaa; letter-spacing: 2px; font-size: 12px;">КРУЗО АЛАРМ</div>
+        <div id="timer">50:00</div>
+        <div class="stats">
+            <span style="color: #ef4444;">Кортизол: 0</span>
+            <span style="color: #3b82f6;">Ендорфини: 0</span>
+        </div>
+    </div>
+    <script>
+        // Регистрираме Service Worker за инсталиране
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
+    </script>
+</body>
+</html>
