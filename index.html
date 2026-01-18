@@ -9,7 +9,6 @@
         :root { --bg: #0f172a; --card: #1e293b; --green: #22c55e; --red: #ef4444; --amber: #f59e0b; --blue: #3b82f6; }
         body { background: var(--bg); color: white; font-family: 'Segoe UI', sans-serif; display: flex; flex-direction: column; align-items: center; min-height: 100vh; margin: 0; padding: 20px; }
         
-        /* Секция I: Динамично Мото  */
         .motto-container { background: rgba(255,255,255,0.05); padding: 20px; border-radius: 15px; margin-bottom: 20px; text-align: center; max-width: 600px; border-left: 4px solid var(--blue); }
         #motto-text { font-style: italic; font-size: 18px; color: #cbd5e1; }
 
@@ -26,10 +25,8 @@
         .btn-start { background: var(--green); color: white; width: 100%; }
         .btn-stop { background: var(--red); color: white; }
         
-        /* Задача на Технологичния дизайнер */
-        #installBtn { background: var(--amber); color: black; padding: 12px 25px; border-radius: 50px; font-weight: bold; margin-bottom: 20px; display: none; border: none; cursor: pointer; }
+        #installBtn { background: var(--amber); color: white; padding: 15px; border-radius: 10px; cursor: pointer; border: none; font-weight: bold; margin-bottom: 20px; display: none; }
 
-        /* Модали за Етичен филтър и Мисии [cite: 19, 21] */
         .modal { display: none; position: fixed; inset: 0; background: rgba(0,0,0,0.95); justify-content: center; align-items: center; z-index: 1000; padding: 20px; }
         .modal-content { background: var(--card); padding: 30px; border-radius: 25px; width: 100%; max-width: 450px; }
         .q-box { margin-bottom: 20px; padding: 15px; background: rgba(255,255,255,0.05); border-radius: 10px; }
@@ -37,16 +34,18 @@
     </style>
 </head>
 <body>
-<button id="installBtn" style="display:none; background: #f59e0b; color: white; padding: 15px; border-radius: 10px; cursor: pointer; border: none; font-weight: bold; margin-bottom: 20px;">
-    📥 ИНСТАЛИРАЙ ПРИЛОЖЕНИЕТО
-</button>
+
+    <button id="installBtn">📥 ИНСТАЛИРАЙ ПРИЛОЖЕНИЕТО</button>
+
     <div class="motto-container">
         <div id="motto-text">"Зареждане на дневното мото..."</div>
     </div>
 
     <div class="main-card">
         <div style="color: var(--blue); font-weight: bold; letter-spacing: 2px; font-size: 12px;">КРУЗО АЛАРМ - ГРУПА 1</div>
-        <div id="timer">50:00</div> <div class="stats-grid">
+        <div id="timer">50:00</div>
+        
+        <div class="stats-grid">
             <div class="stat-box">
                 <span class="stat-label">Кортизол</span>
                 <span id="cort-display" class="stat-num" style="color: var(--red);">0</span>
@@ -66,18 +65,16 @@
     <div id="ethicsModal" class="modal">
         <div class="modal-content">
             <h2 style="color: var(--amber);">🚨 Етичен филтър</h2>
-            <p style="color: #94a3b8; font-size: 14px; margin-bottom: 20px;">Оценка на риска от AI зависимост (Казус Адам Рейн)</p>
-            
             <div id="q1" class="q-box">
-                <p>1. Предпочитате ли да търсите подкрепа от AI, вместо от хора? [cite: 22]</p>
+                <p>1. Предпочитате ли да търсите подкрепа от AI, вместо от хора?</p>
                 <button onclick="recordAnswer(1, true)">ДА</button> <button onclick="recordAnswer(1, false)">НЕ</button>
             </div>
             <div id="q2" class="q-box" style="display:none;">
-                <p>2. Чрез AI можем ли да избягаме от физическите си проблеми? [cite: 22]</p>
+                <p>2. Чрез AI можем ли да избягаме от физическите си проблеми?</p>
                 <button onclick="recordAnswer(2, true)">ДА</button> <button onclick="recordAnswer(2, false)">НЕ</button>
             </div>
             <div id="q3" class="q-box" style="display:none;">
-                <p>3. Пренебрегвате ли основните си нужди заради екрана? [cite: 22]</p>
+                <p>3. Пренебрегвате ли основните си нужди заради екрана?</p>
                 <button onclick="recordAnswer(3, true)">ДА</button> <button onclick="recordAnswer(3, false)">НЕ</button>
             </div>
         </div>
@@ -86,23 +83,20 @@
     <div id="resultModal" class="modal">
         <div class="modal-content" style="text-align: center;">
             <h3 id="resHeader">СЕСИЯТА ПРИКЛЮЧИ</h3>
-            <div id="missionDisplay" style="margin: 20px 0;">
+            <div id="missionDisplay">
                 <h2 id="mTitle" style="color: var(--green);"></h2>
-                <p id="mDesc" style="font-size: 18px;"></p>
+                <p id="mDesc"></p>
             </div>
-
             <div id="crisisPanel" class="crisis-box">
-                <h4 style="margin:0 0 10px 0;">🆘 КРИЗИСНА ПОДКРЕПА</h4>
-                <p>Национална линия: <b>116 111</b> [cite: 26]</p>
-                <p>Домашно насилие: <b>0800 11 977</b> [cite: 28]</p>
+                <h4>🆘 КРИЗИСНА ПОДКРЕПА</h4>
+                <p>Линия: 116 111</p>
             </div>
-            
             <button class="btn btn-start" style="margin-top:20px;" onclick="location.reload()">НОВА СЕСИЯ</button>
         </div>
     </div>
 
     <script>
-        // СЕКЦИЯ I: Всички мото фрази от документа [cite: 8]
+        // 1. ДАННИ
         const mottos = [
             "Мързелът няма да те доведе до никъде.",
             "Светът е отвън, не в екрана.",
@@ -110,9 +104,6 @@
             "Движението е лекът на живота.",
             "Дори и най-малката вяра, може да ти помогне в най-трудните ти дни."
         ];
-        document.getElementById('motto-text').innerText = mottos[Math.floor(Math.random() * mottos.length)];
-
-        // СЕКЦИЯ III: ФВС Мисии 
         const missions = [
             {n: "Клекове", i: "60 клека до долу с изпънати ръце"},
             {n: "Jumping Jacks", i: "от 30 и 40, бързо изпълнение"},
@@ -120,24 +111,29 @@
             {n: "Планк", i: "2 мин. планк на лакти, изпънато тяло"}
         ];
 
-        // ТЕХНОЛОГИЧЕН ДИЗАЙНЕР: Инсталация
+        document.getElementById('motto-text').innerText = mottos[Math.floor(Math.random() * mottos.length)];
+
+        // 2. ИНСТАЛАЦИЯ (PWA)
         let deferredPrompt;
+        const installBtn = document.getElementById('installBtn');
+
         window.addEventListener('beforeinstallprompt', (e) => {
-            e.preventDefault(); deferredPrompt = e;
-            document.getElementById('installBtn').style.display = 'block';
+            e.preventDefault();
+            deferredPrompt = e;
+            installBtn.style.display = 'block';
         });
 
-        document.getElementById('installBtn').addEventListener('click', async () => {
+        installBtn.addEventListener('click', async () => {
             if (deferredPrompt) {
                 deferredPrompt.prompt();
                 const { outcome } = await deferredPrompt.userChoice;
-                if (outcome === 'accepted') document.getElementById('installBtn').style.display = 'none';
+                if (outcome === 'accepted') installBtn.style.display = 'none';
                 deferredPrompt = null;
             }
         });
 
-        // ЛОГИКА ТАЙМЕР (Секция II: 50 мин) 
-        let time = 3000; // 50 минути
+        // 3. ТАЙМЕР ЛОГИКА
+        let time = 3000; 
         let isRunning = false;
         let timerId = null;
         let yesCount = 0;
@@ -151,19 +147,29 @@
         function toggleTimer() {
             const btn = document.getElementById('mainBtn');
             if (!isRunning) {
-                isRunning = true; btn.innerText = "ПАУЗА"; btn.style.background = "#475569";
+                isRunning = true;
+                btn.innerText = "ПАУЗА";
+                btn.style.background = "#475569";
                 timerId = setInterval(() => {
-                    if (time > 0) { time--; updateDisplay(); }
-                    else { finish(); }
+                    if (time > 0) {
+                        time--;
+                        updateDisplay();
+                    } else {
+                        finish();
+                    }
                 }, 1000);
             } else {
-                isRunning = false; btn.innerText = "ПРОДЪЛЖИ"; btn.style.background = "var(--green)";
+                isRunning = false;
+                btn.innerText = "ПРОДЪЛЖИ";
+                btn.style.background = "var(--green)";
                 clearInterval(timerId);
             }
         }
 
         function resetTimer() {
-            clearInterval(timerId); isRunning = false; time = 3000;
+            clearInterval(timerId);
+            isRunning = false;
+            time = 3000;
             document.getElementById('mainBtn').innerText = "СТАРТ";
             document.getElementById('mainBtn').style.background = "var(--green)";
             updateDisplay();
@@ -174,7 +180,7 @@
             document.getElementById('ethicsModal').style.display = 'flex';
         }
 
-        // СЕКЦИЯ IV: Алгоритъм на Етичния филтър [cite: 19, 21, 29]
+        // 4. ЕТИЧЕН ФИЛТЪР И РЕЗУЛТАТИ
         function recordAnswer(qNum, isYes) {
             if (isYes) yesCount++;
             document.getElementById('q' + qNum).style.display = 'none';
@@ -188,17 +194,14 @@
         function processResults() {
             document.getElementById('ethicsModal').style.display = 'none';
             document.getElementById('resultModal').style.display = 'flex';
-            
             const m = missions[Math.floor(Math.random() * missions.length)];
             document.getElementById('mTitle').innerText = m.n;
             document.getElementById('mDesc').innerText = m.i;
 
-            // IF(Да >= 2) -> Секция II & IV [cite: 12, 21, 29]
             if (yesCount >= 2) {
-                document.getElementById('resHeader').innerText = "ВИСОК РИСК (ПЪТЯТ НА АДАМ РЕЙН)";
+                document.getElementById('resHeader').innerText = "ВИСОК РИСК (АДАМ РЕЙН)";
                 document.getElementById('resHeader').style.color = "var(--red)";
                 document.getElementById('crisisPanel').style.display = 'block';
-                // Вграждане на STEM стойностите 
                 document.getElementById('cort-display').innerText = "-5";
                 document.getElementById('endo-display').innerText = "+25";
             } else {
@@ -207,80 +210,10 @@
             }
         }
 
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+        if ('serviceWorker' in navigator) {
+            navigator.serviceWorker.register('sw.js');
+        }
         updateDisplay();
-    let deferredPrompt;
-const installBtn = document.getElementById('installBtn');
-
-// Браузърът проверява дали приложението може да се инсталира
-window.addEventListener('beforeinstallprompt', (e) => {
-    e.preventDefault(); // Спира автоматичното изскачане
-    deferredPrompt = e; // Запазва събитието
-    installBtn.style.display = 'block'; // Показва твоя бутон/линк
-});
-
-// Когато потребителят кликне върху твоя линк
-installBtn.addEventListener('click', async () => {
-    if (deferredPrompt) {
-        deferredPrompt.prompt(); // Показва системния прозорец за инсталация
-        const { outcome } = await deferredPrompt.userChoice;
-        if (outcome === 'accepted') {
-            installBtn.style.display = 'none'; // Скрива бутона при успех
-        }
-        deferredPrompt = null;
-        });
-    let time = 3000; 
-    let running = false;
-    let timerId = null;
-
-    function updateDisplay() {
-        let minutes = Math.floor(time / 60);
-        let seconds = time % 60;
-        document.getElementById('timer').innerText = 
-            `${minutes}:${seconds < 10 ? '0' : ''}${seconds}`;
-    }
-    function toggle() {
-        if (!running) {
-            running = true;
-            timerId = setInterval(() => {
-                if (time > 0) {
-                    time--;
-                    updateDisplay();
-                }
-            }, 1000);
-        } else {
-            running = false;
-            clearInterval(timerId);
-        }
-    }
-    function reset() {
-        clearInterval(timerId);
-        running = false;
-        time = 3000;
-        updateDisplay();
-    }
-
-    // 2. ТВОЯТ НОВ КОД ЗА ИНСТАЛИРАНЕ (Който добавихме сега)
-    let deferredPrompt;
-    const installBtn = document.getElementById('installBtn');
-    window.addEventListener('beforeinstallprompt', (e) => {
-        e.preventDefault();
-        deferredPrompt = e;
-        installBtn.style.display = 'block';
-    });
-    installBtn.addEventListener('click', async () => {
-        if (deferredPrompt) {
-            deferredPrompt.prompt();
-            const { outcome } = await deferredPrompt.userChoice;
-            if (outcome === 'accepted') installBtn.style.display = 'none';
-            deferredPrompt = null;
-        }
-    });
-
-    if ('serviceWorker' in navigator) {
-        navigator.serviceWorker.register('sw.js');
-    }
-    updateDisplay();
-</script>   
+    </script>   
 </body>
 </html>
