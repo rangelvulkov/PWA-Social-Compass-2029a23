@@ -1,3 +1,1 @@
-sself.addEventListener('fetch', (event) => {
-  // Позволява инсталиране и работа офлайн
-});
+self.addEventListener('fetch', () => {});
