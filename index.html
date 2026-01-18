@@ -3,137 +3,151 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Крузо Аларм - СОЦИАЛЕН КОМПАС</title>
+    <title>Социален компас: Крузо</title>
+    <script src="https://cdn.tailwindcss.com"></script>
     <link rel="manifest" href="manifest.webmanifest">
     <style>
-        :root { --primary: #22c55e; --bg: #0f172a; --card: #1e293b; }
-        body {
-            background-color: var(--bg);
-            color: white;
-            font-family: 'Segoe UI', sans-serif;
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: center;
-            height: 100vh;
-            margin: 0;
-        }
-        .container {
-            background: var(--card);
-            padding: 40px;
-            border-radius: 30px;
-            box-shadow: 0 25px 50px rgba(0,0,0,0.5);
-            text-align: center;
-            width: 450px;
-        }
-        #timer {
-            font-size: 100px;
-            font-weight: 900;
-            color: var(--primary);
-            margin: 10px 0;
-            font-family: monospace;
-        }
-        .stats-container {
-            display: flex;
-            justify-content: space-around;
-            margin-bottom: 30px;
-            background: rgba(0,0,0,0.2);
-            padding: 20px;
-            border-radius: 20px;
-        }
-        .stat-box { text-align: center; }
-        .stat-label { font-size: 12px; color: #94a3b8; text-transform: uppercase; letter-spacing: 1px; }
-        .stat-value { font-size: 24px; font-weight: bold; display: block; }
-        .controls button {
-            padding: 15px 35px;
-            font-size: 18px;
-            font-weight: bold;
-            border-radius: 12px;
-            border: none;
-            cursor: pointer;
-            margin: 0 10px;
-        }
-        #startBtn { background: var(--primary); color: white; }
-        #resetBtn { background: #475569; color: white; }
+        .progress-ring { transition: stroke-dashoffset 0.35s; transform: rotate(-90deg); transform-origin: 50% 50%; }
     </style>
 </head>
-<body>
+<body class="bg-slate-50 min-h-screen flex flex-col items-center p-4 font-sans">
 
-    <div class="container">
-        <div style="font-size: 14px; color: #94a3b8; letter-spacing: 3px; margin-bottom: 10px;">БИО-МОНИТОР КРУЗО</div>
+    <div id="motto-box" class="w-full max-w-md bg-green-600 text-white p-4 rounded-2xl shadow-lg mb-6 text-center italic min-h-[80px] flex items-center justify-center">
+        "Зареждам дигитален наръчник..."
+    </div>
+
+    <div class="w-full max-w-md bg-white rounded-[2.5rem] shadow-2xl p-8 border border-slate-100 text-center">
+        <h1 class="text-xs font-black tracking-[0.3em] text-slate-400 mb-8 uppercase">Крузо Аларм / STEM Баланс</h1>
         
-        <div class="stats-container">
-            <div class="stat-box">
-                <span class="stat-label">Кортизол</span>
-                <span id="cort" class="stat-value" style="color: #ef4444;">0</span>
+        <div class="flex justify-between mb-8 px-4">
+            <div class="text-center">
+                <span class="block text-[10px] uppercase tracking-widest text-slate-400">Кортизол</span>
+                <span id="cortisol-val" class="text-2xl font-bold text-red-500">0</span>
             </div>
-            <div class="stat-box">
-                <span class="stat-label">Ендорфини</span>
-                <span id="endo" class="stat-value" style="color: #3b82f6;">0</span>
+            <div class="text-center">
+                <span class="block text-[10px] uppercase tracking-widest text-slate-400">Ендорфини</span>
+                <span id="endorphin-val" class="text-2xl font-bold text-blue-500">0</span>
             </div>
         </div>
 
-        <div id="timer">50:00</div>
+        <div class="relative flex items-center justify-center mb-10">
+            <svg width="220" height="220">
+                <circle class="text-slate-100" stroke-width="10" stroke="currentColor" fill="transparent" r="100" cx="110" cy="110"/>
+                <circle id="progress" class="text-green-500 progress-ring" stroke-width="10" stroke-dasharray="628.3" stroke-dashoffset="628.3" stroke-linecap="round" stroke="currentColor" fill="transparent" r="100" cx="110" cy="110"/>
+            </svg>
+            <div id="timer-display" class="absolute text-5xl font-mono font-black text-slate-800">50:00</div>
+        </div>
 
-        <div class="controls">
-            <button id="startBtn" onclick="toggle()">Старт</button>
-            <button onclick="reset()">Нулиране</button>
+        <button id="main-btn" onclick="startTimer()" class="w-full bg-slate-900 text-white py-5 rounded-2xl font-bold hover:bg-slate-800 transition-all shadow-xl active:scale-95">СТАРТ СЕСИЯ</button>
+    </div>
+
+    <div id="modal" class="fixed inset-0 bg-black/60 backdrop-blur-sm hidden flex items-center justify-center p-6 z-50">
+        <div class="bg-white rounded-[2rem] p-8 max-w-sm w-full shadow-2xl">
+            <div id="modal-content"></div>
         </div>
     </div>
 
     <script>
-        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+        // Данни от Секция I, II, III и IV
+        const mottos = [
+            "Режимът е моята крепост срещу лудостта.",
+            "Петкан не е просто слуга, той е моето социално огледало.",
+            "Отчаянието се лекува с труд и броени стъпки.",
+            "Моят остров, моите правила, моят дигитален баланс.",
+            "Цивилизацията е вътре в мен, не в екрана."
+        ];
+        const missions = ["20 клякания", "1 минута планк", "15 лицеви опори", "30 секунди висок ход"];
+        const ethicalQuestions = ["Чувстваш ли се изолиран без екрана?", "Пренебрегваш ли хигиената си заради игри?", "Лъжеш ли за времето, прекарано онлайн?"];
+        
+        let cortisol = 0, endorphins = 0, time = 3000, timerIdx = null;
 
-        let time = 3000;
-        let isRunning = false;
-        let interval = null;
+        // Ротация на мотота
+        let mottoIdx = 0;
+        setInterval(() => {
+            mottoIdx = (mottoIdx + 1) % mottos.length;
+            document.getElementById('motto-box').innerText = mottos[mottoIdx];
+        }, 5000);
 
-        function updateDisplay() {
-            const mins = Math.floor(time / 60);
-            const secs = time % 60;
-            document.getElementById('timer').innerText = 
-                `${mins.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-            
-            // Логика за "хромозомите" (статистиките)
-            let passed = 3000 - time;
-            document.getElementById('cort').innerText = Math.floor(passed / 60); // Покачва се всяка минута
-            document.getElementById('endo').innerText = Math.floor(passed / 120); // На всеки 2 минути
+        function updateUI() {
+            const m = Math.floor(time / 60), s = time % 60;
+            document.getElementById('timer-display').innerText = `${m}:${s < 10 ? '0' : ''}${s}`;
+            const offset = 628.3 - ( (3000 - time) / 3000) * 628.3;
+            document.getElementById('progress').style.strokeDashoffset = offset;
+            document.getElementById('cortisol-val').innerText = cortisol;
+            document.getElementById('endorphin-val').innerText = endorphins;
         }
 
-        function toggle() {
-            const btn = document.getElementById('startBtn');
-            if (!isRunning) {
-                isRunning = true;
-                btn.innerText = "Пауза";
-                btn.style.background = "#ef4444";
-                interval = setInterval(() => {
-                    if (time > 0) {
-                        time--;
-                        updateDisplay();
-                    } else {
-                        clearInterval(interval);
-                        alert("Времето изтече!");
-                        reset();
-                    }
-                }, 1000);
+        function startTimer() {
+            if(timerIdx) return;
+            document.getElementById('main-btn').disabled = true;
+            timerIdx = setInterval(() => {
+                if(time > 0) {
+                    time--;
+                    if((3000 - time) % 300 === 0) cortisol += 5; // Секция II: +5 на всеки 5 мин
+                    updateUI();
+                } else {
+                    clearInterval(timerIdx);
+                    showMission();
+                }
+            }, 1000);
+        }
+
+        function showMission() {
+            const mission = missions[Math.floor(Math.random()*missions.length)];
+            const modal = document.getElementById('modal');
+            modal.classList.remove('hidden');
+            document.getElementById('modal-content').innerHTML = `
+                <h2 class="text-xl font-bold mb-4">🚨 ВРЕМЕТО ИЗТЕЧЕ!</h2>
+                <p class="mb-6 text-slate-600">За да отключиш устройството, изпълни ФВС Мисия:<br><strong>${mission}</strong></p>
+                <div class="flex flex-col gap-3">
+                    <button onclick="completeMission()" class="bg-green-500 text-white py-3 rounded-xl font-bold">ИЗПЪЛНЕНО</button>
+                    <button onclick="triggerEthics()" class="text-slate-400 text-sm py-2">Отказвам мисията</button>
+                </div>
+            `;
+        }
+
+        function completeMission() {
+            cortisol -= 15; // Секция II: Корекция -15
+            endorphins += 20; // Секция II: Корекция +20
+            resetApp();
+        }
+
+        function triggerEthics() {
+            let ethicsContent = `<h2 class="text-xl font-bold mb-4">Етичен филтър</h2><div class="text-left space-y-4">`;
+            ethicalQuestions.forEach((q, i) => {
+                ethicsContent += `<label class="flex items-center gap-3 text-sm"><input type="checkbox" class="ethics-check"> ${q}</label>`;
+            });
+            ethicsContent += `</div><button onclick="checkEthics()" class="w-full bg-slate-900 text-white py-3 rounded-xl mt-6">Провери риск</button>`;
+            document.getElementById('modal-content').innerHTML = ethicsContent;
+        }
+
+        function checkEthics() {
+            const yesCount = document.querySelectorAll('.ethics-check:checked').length;
+            if(yesCount >= 2) {
+                document.getElementById('modal-content').innerHTML = `
+                    <h2 class="text-xl font-bold text-red-600 mb-4">ВИСОК РИСК!</h2>
+                    <p class="text-sm mb-6">Твоите отговори показват нужда от подкрепа.</p>
+                    <div class="bg-slate-100 p-4 rounded-xl text-left text-xs space-y-2">
+                        <p>📞 Национална линия за деца: 116 111</p>
+                        <p>🌐 safenet.bg (Център за безопасен интернет)</p>
+                    </div>
+                    <button onclick="resetApp()" class="w-full mt-6 py-2 text-slate-500">Затвори</button>
+                `;
             } else {
-                isRunning = false;
-                btn.innerText = "Старт";
-                btn.style.background = "#22c55e";
-                clearInterval(interval);
+                resetApp();
             }
         }
 
-        function reset() {
-            clearInterval(interval);
-            isRunning = false;
+        function resetApp() {
             time = 3000;
-            updateDisplay();
-            document.getElementById('startBtn').innerText = "Старт";
-            document.getElementById('startBtn').style.background = "#22c55e";
+            clearInterval(timerIdx);
+            timerIdx = null;
+            document.getElementById('main-btn').disabled = false;
+            document.getElementById('modal').classList.add('hidden');
+            updateUI();
         }
 
-        updateDisplay();
+        updateUI();
     </script>
 </body>
 </html>
