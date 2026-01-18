@@ -1,7 +1,7 @@
 {
-  "name": "Социален компас: Робинзон Крузо",
-  "short_name": "Крузо Аларм",
-  "start_url": "index.html",
+  "name": "Социален компас: Робинзон Крузо и AI",
+  "short_name": "Социален компас",
+  "start_url": ".",
   "display": "standalone",
   "background_color": "#f8f8f8",
   "theme_color": "#22c55e",
@@ -9,7 +9,12 @@
   "icons": [
     {
       "src": "icon.svg",
-      "sizes": "any",
+      "sizes": "192x192",
+      "type": "image/svg+xml"
+    },
+    {
+      "src": "icon.svg",
+      "sizes": "512x512",
       "type": "image/svg+xml"
     }
   ]
