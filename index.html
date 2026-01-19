@@ -1,0 +1,269 @@
+<!DOCTYPE html>
+<html lang="bg">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Социален компас: Робинзон Крузо и AI</title>
+    <link rel="manifest" href="manifest.webmanifest">
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700;900&display=swap" rel="stylesheet">
+    <style>
+        body { font-family: 'Montserrat', sans-serif; background-color: #f8f8f8; }
+        .modal { display: none; position: fixed; inset: 0; z-index: 50; background: rgba(0,0,0,0.9); align-items: center; justify-content: center; padding: 20px; }
+        .modal.active { display: flex; }
+    </style>
+</head>
+<body class="flex flex-col min-h-screen">
+
+    <header class="bg-green-600 text-white p-5 shadow-lg text-center fixed top-0 w-full z-40">
+        <div id="motto-display" class="italic text-sm font-medium h-12 flex items-center justify-center transition-opacity duration-500">
+            Зареждане на вдъхновение...
+        </div>
+    </header>
+
+    <main class="mt-28 p-6 flex-grow max-w-md mx-auto w-full space-y-6">
+        
+        <div class="grid grid-cols-2 gap-4">
+            <div class="bg-white p-5 rounded-3xl shadow-md border-b-4 border-red-500 text-center">
+                <span class="text-[10px] uppercase font-black text-gray-400">Кортизол (Стрес)</span>
+                <div id="cortisol-val" class="text-3xl font-black text-red-600">20</div>
+            </div>
+            <div class="bg-white p-5 rounded-3xl shadow-md border-b-4 border-green-500 text-center">
+                <span class="text-[10px] uppercase font-black text-gray-400">Ендорфини (Щастие)</span>
+                <div id="endorphin-val" class="text-3xl font-black text-green-600">80</div>
+            </div>
+        </div>
+
+        <div class="bg-white rounded-[40px] p-10 shadow-2xl text-center border border-gray-100">
+            <h2 class="text-gray-400 text-xs font-bold uppercase tracking-widest mb-4">Крузо аларм</h2>
+            <div id="timer-display" class="text-6xl font-black text-gray-800 mb-2 tracking-tighter">00:00</div>
+            <div id="total-time" class="text-[10px] text-blue-500 font-bold uppercase mb-8 tracking-widest">Общо пред екрана: 0 мин</div>
+            
+            <button id="mainBtn" onclick="toggleTimer()" class="w-full bg-green-500 hover:bg-green-600 text-white font-black py-5 rounded-3xl shadow-xl active:scale-95 transition-all text-lg">
+                СТАРТ
+            </button>
+        </div>
+        
+        <button id="pwaBtn" class="hidden w-full bg-gray-800 text-white py-4 rounded-2xl font-bold text-sm shadow-lg">
+            📲 ИНСТАЛИРАЙ ПРИЛОЖЕНИЕТО
+        </button>
+    </main>
+
+    <audio id="alarm-sound" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+    <div id="missionModal" class="modal">
+        <div class="bg-white rounded-[40px] p-8 max-w-sm w-full text-center">
+            <div class="text-5xl mb-4">🚨</div>
+            <h2 class="text-2xl font-black text-gray-800 mb-2 uppercase">Времето изтече!</h2>
+            <p class="text-gray-500 text-sm mb-6 leading-relaxed">Достигнахте 50 минути. Кортизолът е висок! Време е за движение.</p>
+            
+            <div id="missionBox" class="hidden bg-green-50 p-5 rounded-3xl mb-6 border-2 border-green-100">
+                <p id="missionName" class="font-black text-green-700 uppercase text-lg mb-1"></p>
+                <p id="missionDesc" class="text-gray-700 text-sm italic"></p>
+                <div class="mt-4 h-32 bg-gray-200 rounded-2xl flex items-center justify-center text-gray-400 text-[10px]">Визуална инструкция (Видео)</div>
+            </div>
+
+            <button id="genBtn" onclick="generateMission()" class="w-full bg-blue-600 text-white py-4 rounded-2xl font-bold mb-3 shadow-lg">ГЕНЕРИРАЙ МИСИЯ</button>
+            <button id="doneBtn" onclick="finishMission()" class="hidden w-full bg-green-600 text-white py-4 rounded-2xl font-bold mb-3 shadow-lg">ИЗПЪЛНИХ МИСИЯТА</button>
+            <button onclick="showEthics()" class="text-gray-400 text-xs font-bold underline uppercase tracking-widest">Отказвам мисията</button>
+        </div>
+    </div>
+
+    <div id="ethicsModal" class="modal">
+        <div class="bg-white rounded-[40px] p-8 max-w-sm w-full">
+            <div id="ethicsContent">
+                <h3 class="font-black text-purple-700 text-xl mb-6 uppercase tracking-tight">Етичен филтър</h3>
+                <div class="space-y-6 text-sm mb-8" id="ethicsForm">
+                    <div>
+                        <p class="font-bold mb-3">1. Предпочитате ли да търсите подкрепа от AI, вместо да говорите с други хора?</p>
+                        <div class="flex gap-6"><label><input type="radio" name="e1" value="y"> Да</label> <label><input type="radio" name="e1" value="n"> Не</label></div>
+                    </div>
+                    <div>
+                        <p class="font-bold mb-3">2. Чрез изкуствения интелект можем ли да избягаме от физическите си проблеми?</p>
+                        <div class="flex gap-6"><label><input type="radio" name="e2" value="y"> Да</label> <label><input type="radio" name="e2" value="n"> Не</label></div>
+                    </div>
+                    <div>
+                        <p class="font-bold mb-3">3. Пренебрегвате ли основните си нужди, за да прекарате повече време на екрана?</p>
+                        <div class="flex gap-6"><label><input type="radio" name="e3" value="y"> Да</label> <label><input type="radio" name="e3" value="n"> Не</label></div>
+                    </div>
+                </div>
+                <button onclick="checkEthics()" class="w-full bg-purple-600 text-white py-4 rounded-2xl font-bold shadow-lg">ПРОВЕРИ РЕЗУЛТАТА</button>
+            </div>
+
+            <div id="crisisPanel" class="hidden text-center">
+                <div class="bg-red-50 p-6 rounded-3xl border-2 border-red-200 mb-6">
+                    <p class="text-red-600 font-black text-lg mb-2 uppercase">Висок риск!</p>
+                    <p class="text-xs text-gray-600 mb-4">Поели сте по пътя на Адам Рейн. Свържете се с:</p>
+                    <p class="font-bold text-gray-800">📞 116 111 (Национална линия)</p>
+                    <p class="font-bold text-gray-800">📞 0800 11 977 (Помощ)</p>
+                </div>
+                <button onclick="backToMission()" class="w-full bg-gray-900 text-white py-4 rounded-2xl font-bold">ВЪРНИ СЕ И НАПРАВИ МИСИЯ</button>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        // --- ДАННИ ОТ ДОКУМЕНТА ---
+        // Секция I: Мотота [cite: 87]
+        const MOTTOES = [
+            "Мързелът няма да те доведе до никъде.",
+            "Светът е отвън, не в екрана.",
+            "Говори с хора, а не с телефона.",
+            "Движението е лекът на живота.",
+            "Дори и най-малката вяра, може да ти помогне в най-трудните ти дни."
+        ];
+        
+        // Секция III: Мисии 
+        const MISSIONS = [
+            {n: "Клекове", d: "60 клека до долу с изпънати ръце"},
+            {n: "Jumping Jacks", d: "от 30 и 40, бързо изпълнение"},
+            {n: "Бавно тичане", d: "5 км джогинг"},
+            {n: "Планк", d: "2 мин. планк на лакти, изпънато тяло"}
+        ];
+
+        let cortisol = 20, endorphins = 80, sessionSeconds = 0, totalSeconds = 0, active = false, timer;
+        // Праг на алармата: 50 минути = 3000 секунди [cite: 91]
+        const ALARM_LIMIT = 3000; 
+
+        // Ротация на мотота
+        let mIdx = 0;
+        setInterval(() => {
+            const box = document.getElementById('motto-display');
+            box.style.opacity = 0;
+            setTimeout(() => {
+                box.innerText = MOTTOES[mIdx];
+                box.style.opacity = 1;
+                mIdx = (mIdx + 1) % MOTTOES.length;
+            }, 500);
+        }, 5000);
+
+        function toggleTimer() {
+            const btn = document.getElementById('mainBtn');
+            if (!active) {
+                active = true; btn.innerText = "СТОП"; btn.classList.replace('bg-green-500', 'bg-red-500');
+                timer = setInterval(() => {
+                    sessionSeconds++; 
+                    totalSeconds++; // [cite: 25] Отчита общо време
+                    
+                    // Хормонална логика по време на работа 
+                    // На всеки 5 минути (300 сек): Кортизол +5, Ендорфини -5
+                    if (sessionSeconds % 300 === 0) { 
+                        cortisol += 5; 
+                        endorphins -= 5;
+                    }
+                    
+                    updateUI();
+                    
+                    // Проверка за праг 50 мин [cite: 14]
+                    if (sessionSeconds >= ALARM_LIMIT) triggerAlarm(); 
+                }, 1000);
+            } else { stop(); }
+        }
+
+        function stop() { 
+            active = false; clearInterval(timer); 
+            const btn = document.getElementById('mainBtn');
+            btn.innerText = "СТАРТ"; btn.classList.replace('bg-red-500', 'bg-green-500'); 
+        }
+
+        function updateUI() {
+            const m = Math.floor(sessionSeconds / 60), s = sessionSeconds % 60;
+            document.getElementById('timer-display').innerText = `${String(m).padStart(2,'0')}:${String(s).padStart(2,'0')}`;
+            document.getElementById('total-time').innerText = `Общо пред екрана: ${Math.floor(totalSeconds / 60)} мин`;
+            document.getElementById('cortisol-val').innerText = cortisol;
+            document.getElementById('endorphin-val').innerText = endorphins;
+        }
+
+        function triggerAlarm() {
+            stop();
+            document.getElementById('alarm-sound').play(); // [cite: 22]
+            document.getElementById('missionModal').classList.add('active');
+        }
+
+        function generateMission() {
+            const m = MISSIONS[Math.floor(Math.random()*MISSIONS.length)];
+            document.getElementById('missionName').innerText = m.n;
+            document.getElementById('missionDesc').innerText = m.d;
+            document.getElementById('missionBox').classList.remove('hidden');
+            document.getElementById('genBtn').classList.add('hidden');
+            document.getElementById('doneBtn').classList.remove('hidden');
+        }
+
+        function finishMission() {
+            // Корекция след мисия [cite: 91]
+            // Кортизол -5 (намалява)
+            // Ендорфини +25 (увеличава)
+            cortisol = Math.max(0, cortisol - 5);
+            endorphins += 25;
+            sessionSeconds = 0; // Нулиране на сесията
+            updateUI();
+            document.getElementById('missionModal').classList.remove('active');
+            resetModals();
+        }
+
+        function showEthics() {
+            // Активира се само при ОТКАЗ 
+            document.getElementById('missionModal').classList.remove('active');
+            document.getElementById('ethicsModal').classList.add('active');
+        }
+
+        function checkEthics() {
+            // Проверка за >= 2 "Да" [cite: 100, 108]
+            const yes = document.querySelectorAll('input[type="radio"][value="y"]:checked').length;
+            if (yes >= 2) {
+                // Висок риск -> Кризисен панел
+                document.getElementById('ethicsContent').classList.add('hidden');
+                document.getElementById('crisisPanel').classList.remove('hidden');
+            } else {
+                alert("Рискът е нисък, но трябва да изпълните мисията за баланс!");
+                backToMission();
+            }
+        }
+
+        function backToMission() {
+            // Връщане към мисията след криза [cite: 24]
+            document.getElementById('ethicsModal').classList.remove('active');
+            document.getElementById('missionModal').classList.add('active');
+        }
+
+        function resetModals() {
+            document.getElementById('missionBox').classList.add('hidden');
+            document.getElementById('genBtn').classList.remove('hidden');
+            document.getElementById('doneBtn').classList.add('hidden');
+            document.getElementById('ethicsContent').classList.remove('hidden');
+            document.getElementById('crisisPanel').classList.add('hidden');
+        }
+
+        // Фоново броене [cite: 26]
+        let lastTimestamp = Date.now();
+        document.addEventListener('visibilitychange', () => {
+            if (document.hidden) {
+                lastTimestamp = Date.now();
+            } else if (active) {
+                const elapsed = Math.floor((Date.now() - lastTimestamp) / 1000);
+                sessionSeconds += elapsed;
+                totalSeconds += elapsed;
+                // Наваксване на хормоните при дълго отсъствие
+                const fiveMinChunks = Math.floor(elapsed / 300);
+                if(fiveMinChunks > 0) {
+                    cortisol += (5 * fiveMinChunks);
+                    endorphins -= (5 * fiveMinChunks);
+                }
+                updateUI();
+                if (sessionSeconds >= ALARM_LIMIT) triggerAlarm();
+            }
+        });
+
+        // PWA Инсталация
+        let deferredPrompt;
+        window.addEventListener('beforeinstallprompt', (e) => {
+            e.preventDefault(); deferredPrompt = e;
+            document.getElementById('pwaBtn').classList.remove('hidden');
+        });
+        document.getElementById('pwaBtn').addEventListener('click', () => {
+            deferredPrompt.prompt();
+        });
+        if ('serviceWorker' in navigator) { navigator.serviceWorker.register('sw.js'); }
+    </script>
+</body>
+</html>
