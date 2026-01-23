@@ -1,5 +1,5 @@
 {
-  "name": "Социален компас: Робинзов Крузо и AI",
+  "name": "Социален компас: Робинзон Крузо и AI",
   "short_name": "Социален компас",
   "start_url": "index.html",
   "display": "standalone",
@@ -9,8 +9,9 @@
   "icons": [
     {
       "src": "icon.svg",
-      "sizes": "any",
-      "type": "image/svg+xml"
+      "sizes": "512x512",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
     }
   ]
 }
