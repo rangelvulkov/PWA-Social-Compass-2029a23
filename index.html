@@ -26,11 +26,11 @@
         <div class="grid grid-cols-2 gap-4">
             <div class="bg-white p-5 rounded-3xl shadow-md border-b-4 border-red-500 text-center">
                 <span class="text-[10px] uppercase font-black text-gray-400">Кортизол (Стрес)</span>
-                <div id="cortisol-val" class="text-3xl font-black text-red-600">20</div>
+                <div id="cortisol-val" class="text-3xl font-black text-red-600">0</div>
             </div>
             <div class="bg-white p-5 rounded-3xl shadow-md border-b-4 border-green-500 text-center">
                 <span class="text-[10px] uppercase font-black text-gray-400">Ендорфини (Щастие)</span>
-                <div id="endorphin-val" class="text-3xl font-black text-green-600">80</div>
+                <div id="endorphin-val" class="text-3xl font-black text-green-600">0</div>
             </div>
         </div>
 
@@ -103,8 +103,7 @@
     </div>
 
     <script>
-        // --- ДАННИ ОТ ДОКУМЕНТА ---
-        // Секция I: Мотота [cite: 87]
+        // --- ДАННИ ОТ ДОКУМЕНТА [cite: 87] ---
         const MOTTOES = [
             "Мързелът няма да те доведе до никъде.",
             "Светът е отвън, не в екрана.",
@@ -113,7 +112,7 @@
             "Дори и най-малката вяра, може да ти помогне в най-трудните ти дни."
         ];
         
-        // Секция III: Мисии 
+        // --- ДАННИ ЗА МИСИИ [cite: 95] ---
         const MISSIONS = [
             {n: "Клекове", d: "60 клека до долу с изпънати ръце"},
             {n: "Jumping Jacks", d: "от 30 и 40, бързо изпълнение"},
@@ -121,9 +120,14 @@
             {n: "Планк", d: "2 мин. планк на лакти, изпънато тяло"}
         ];
 
-        let cortisol = 20, endorphins = 80, sessionSeconds = 0, totalSeconds = 0, active = false, timer;
-        // Праг на алармата: 50 минути = 3000 секунди [cite: 91]
-        const ALARM_LIMIT = 3000; 
+        // --- ЛОГИКА И ПРОМЕНЛИВИ ---
+        // Искане на потребителя: Старт от 0
+        let cortisol = 0; 
+        let endorphins = 0; 
+        
+        let sessionSeconds = 0, totalSeconds = 0, active = false, timer;
+        // Праг на алармата: 50 минути [cite: 91]
+        const ALARM_LIMIT = 3000; // 3000 секунди = 50 мин
 
         // Ротация на мотота
         let mIdx = 0;
@@ -140,16 +144,21 @@
         function toggleTimer() {
             const btn = document.getElementById('mainBtn');
             if (!active) {
-                active = true; btn.innerText = "СТОП"; btn.classList.replace('bg-green-500', 'bg-red-500');
+                active = true; 
+                btn.innerText = "СТОП"; 
+                btn.classList.replace('bg-green-500', 'bg-red-500');
+                
                 timer = setInterval(() => {
                     sessionSeconds++; 
-                    totalSeconds++; // [cite: 25] Отчита общо време
+                    totalSeconds++; 
                     
-                    // Хормонална логика по време на работа 
-                    // На всеки 5 минути (300 сек): Кортизол +5, Ендорфини -5
-                    if (sessionSeconds % 300 === 0) { 
+                    // --- КОРЕКЦИЯ НА ЛОГИКАТА ЗА 5 МИНУТИ ---
+                    //  Увеличаване на кортизола: На всеки 5 минути.
+                    // Добавена е проверка (sessionSeconds > 0), за да не се активира веднага при старт (секунда 0).
+                    if (sessionSeconds > 0 && sessionSeconds % 300 === 0) { 
                         cortisol += 5; 
                         endorphins -= 5;
+                        updateUI();
                     }
                     
                     updateUI();
@@ -176,7 +185,7 @@
 
         function triggerAlarm() {
             stop();
-            document.getElementById('alarm-sound').play(); // [cite: 22]
+            document.getElementById('alarm-sound').play(); 
             document.getElementById('missionModal').classList.add('active');
         }
 
@@ -191,29 +200,27 @@
 
         function finishMission() {
             // Корекция след мисия [cite: 91]
-            // Кортизол -5 (намалява)
-            // Ендорфини +25 (увеличава)
-            cortisol = Math.max(0, cortisol - 5);
+            // Кортизол -5, Ендорфини +25
+            cortisol = cortisol - 5; // Позволяваме да пада и под 0, или може да сложим Math.max(0, ...), но по документ е "-5"
             endorphins += 25;
-            sessionSeconds = 0; // Нулиране на сесията
+            
+            sessionSeconds = 0; // Нулиране на сесията за нова 50-минутка
             updateUI();
             document.getElementById('missionModal').classList.remove('active');
             resetModals();
         }
 
         function showEthics() {
-            // Активира се само при ОТКАЗ 
             document.getElementById('missionModal').classList.remove('active');
             document.getElementById('ethicsModal').classList.add('active');
         }
 
         function checkEthics() {
-            // Проверка за >= 2 "Да" [cite: 100, 108]
+            // Проверка за >= 2 "Да" [cite: 100]
             const yes = document.querySelectorAll('input[type="radio"][value="y"]:checked').length;
             if (yes >= 2) {
-                // Висок риск -> Кризисен панел
                 document.getElementById('ethicsContent').classList.add('hidden');
-                document.getElementById('crisisPanel').classList.remove('hidden');
+                document.getElementById('crisisPanel').classList.remove('hidden'); // Показване на контакти [cite: 105, 107]
             } else {
                 alert("Рискът е нисък, но трябва да изпълните мисията за баланс!");
                 backToMission();
@@ -221,7 +228,7 @@
         }
 
         function backToMission() {
-            // Връщане към мисията след криза [cite: 24]
+            // Връщане към мисията [cite: 24]
             document.getElementById('ethicsModal').classList.remove('active');
             document.getElementById('missionModal').classList.add('active');
         }
@@ -233,26 +240,6 @@
             document.getElementById('ethicsContent').classList.remove('hidden');
             document.getElementById('crisisPanel').classList.add('hidden');
         }
-
-        // Фоново броене [cite: 26]
-        let lastTimestamp = Date.now();
-        document.addEventListener('visibilitychange', () => {
-            if (document.hidden) {
-                lastTimestamp = Date.now();
-            } else if (active) {
-                const elapsed = Math.floor((Date.now() - lastTimestamp) / 1000);
-                sessionSeconds += elapsed;
-                totalSeconds += elapsed;
-                // Наваксване на хормоните при дълго отсъствие
-                const fiveMinChunks = Math.floor(elapsed / 300);
-                if(fiveMinChunks > 0) {
-                    cortisol += (5 * fiveMinChunks);
-                    endorphins -= (5 * fiveMinChunks);
-                }
-                updateUI();
-                if (sessionSeconds >= ALARM_LIMIT) triggerAlarm();
-            }
-        });
 
         // PWA Инсталация
         let deferredPrompt;
